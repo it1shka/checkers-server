@@ -49,8 +49,3 @@ type Piece struct {
   Type PieceType
   Square PieceSquare
 }
-
-type Board struct {
-  Turn PieceColor
-  Pieces []Piece
-}
