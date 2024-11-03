@@ -10,16 +10,20 @@ import (
 func TestBoardInit(t *testing.T) {
 	board := gamelogic.InitBoard()
 	expected := strings.Join([]string{
-		" R R R R",
-		"R R R R ",
-		" R R R R",
+		" r r r r",
+		"r r r r ",
+		" r r r r",
 		"* * * * ",
 		" * * * *",
-		"B B B B ",
-		" B B B B",
-		"B B B B ",
+		"b b b b ",
+		" b b b b",
+		"b b b b ",
 	}, "\n")
 	if board.String() != expected {
 		t.Fatalf("%s\nexpected, found\n%s", expected, board)
 	}
+}
+
+func Test(t *testing.T) {
+
 }

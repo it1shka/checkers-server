@@ -3,19 +3,21 @@ package gamelogic
 import "strings"
 
 const (
-	BOARD_SIZE         = 32
-	RED_START_SQUARE   = 1
-	RED_END_SQUARE     = 12
-	BLACK_START_SQUARE = 21
-	BLACK_END_SQUARE   = 32
-	FIRST_ROW          = 1
-	LAST_ROW           = 8
-	FIRST_COLUMN       = 1
-	LAST_COLUMN        = 8
-	BLACK_MARK         = 'B'
-	RED_MARK           = 'R'
-	EMPTY_MARK         = ' '
-	SQUARE_MARK        = '*'
+	boardSize        = 32
+	redStartSquare   = 1
+	redEndSquare     = 12
+	blackStartSquare = 21
+	blackEndSquare   = 32
+	firstRow         = 1
+	lastRow          = 8
+	firstColumn      = 1
+	lastColumn       = 8
+	blackManSymbol   = 'b'
+	redManSymbol     = 'r'
+	blackKingSymbol  = 'B'
+	redKingSymbol    = 'R'
+	emptySymbol      = ' '
+	squareSymbol     = '*'
 )
 
 type Board struct {
@@ -24,9 +26,9 @@ type Board struct {
 }
 
 func InitBoard() Board {
-	pieces := make([]Piece, BOARD_SIZE)
+	pieces := make([]Piece, boardSize)
 	index := 0
-	for i := RED_START_SQUARE; i <= RED_END_SQUARE; i++ {
+	for i := redStartSquare; i <= redEndSquare; i++ {
 		pieces[index] = Piece{
 			Color:  RED,
 			Type:   MAN,
@@ -34,7 +36,7 @@ func InitBoard() Board {
 		}
 		index++
 	}
-	for i := BLACK_START_SQUARE; i <= BLACK_END_SQUARE; i++ {
+	for i := blackStartSquare; i <= blackEndSquare; i++ {
 		pieces[index] = Piece{
 			Color:  BLACK,
 			Type:   MAN,
@@ -60,30 +62,33 @@ func (board Board) Pieces() []Piece {
 
 func (board Board) String() string {
 	var output strings.Builder
-	for row := FIRST_ROW; row <= LAST_ROW; row++ {
-		for col := FIRST_COLUMN; col <= LAST_COLUMN; col++ {
+	for row := firstRow; row <= lastRow; row++ {
+		for col := firstColumn; col <= lastColumn; col++ {
 			pos := PiecePosition{row, col}
 			if !pos.IsValid() {
-				output.WriteRune(EMPTY_MARK)
+				output.WriteRune(emptySymbol)
 				continue
 			}
-			empty := true
+			symbol := squareSymbol
 			for _, piece := range board.pieces {
-				if pos.ToSquare() == piece.Square {
-					empty = false
-					if piece.Color == BLACK {
-						output.WriteRune(BLACK_MARK)
-					} else {
-						output.WriteRune(RED_MARK)
-					}
-					break
+				if piece.Square != pos.ToSquare() {
+					continue
 				}
+				switch {
+				case piece.Color == BLACK && piece.Type == MAN:
+					symbol = blackManSymbol
+				case piece.Color == BLACK && piece.Type == KING:
+					symbol = blackKingSymbol
+				case piece.Color == RED && piece.Type == MAN:
+					symbol = redManSymbol
+				default:
+					symbol = redKingSymbol
+				}
+				break
 			}
-			if empty {
-				output.WriteRune(SQUARE_MARK)
-			}
+			output.WriteRune(symbol)
 		}
-		if row < LAST_ROW {
+		if row < lastRow {
 			output.WriteRune('\n')
 		}
 	}
