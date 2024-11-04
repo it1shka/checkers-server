@@ -1,6 +1,8 @@
 package gamelogic_test
 
 import (
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -55,6 +57,38 @@ func TestBoardPieceAt(t *testing.T) {
       t.Fatalf(
         "expected different color at %d square",
         testCase.Square,
+      )
+    }
+  }
+}
+
+func TestHypotheticalMovesAt(t *testing.T) {
+  board := gamelogic.InitBoard()
+  testCases := []struct {
+    Square gamelogic.PieceSquare
+    Moves []gamelogic.PieceSquare
+  }{
+    {1, []gamelogic.PieceSquare{}},
+    {3, []gamelogic.PieceSquare{}},
+    {7, []gamelogic.PieceSquare{}},
+    {30, []gamelogic.PieceSquare{}},
+    {27, []gamelogic.PieceSquare{}},
+    {11, []gamelogic.PieceSquare{15, 16}},
+    {10, []gamelogic.PieceSquare{14, 15}},
+  }
+  for _, testCase := range testCases {
+    pieceMoves, _ := board.HypotheticalMovesAt(testCase.Square)
+    squareMoves := make([]gamelogic.PieceSquare, len(pieceMoves))
+    for i := 0; i < len(pieceMoves); i++ {
+      squareMoves[i] = pieceMoves[i].To
+    }
+    slices.Sort(squareMoves)
+    if !reflect.DeepEqual(squareMoves, testCase.Moves) {
+      t.Fatalf(
+        "wrong moves at %d square: found %v, expected %v", 
+        testCase.Square, 
+        squareMoves,
+        testCase.Moves,
       )
     }
   }
