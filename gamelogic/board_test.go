@@ -93,3 +93,42 @@ func TestHypotheticalMovesAt(t *testing.T) {
     }
   }
 }
+
+func TestPossibleMovesFor(t *testing.T) {
+  board := gamelogic.InitBoard()
+  testCases := []struct {
+    Color gamelogic.PieceColor
+    Moves []gamelogic.BoardMove
+  }{
+    {gamelogic.BLACK, []gamelogic.BoardMove{
+      {From: 21, To: 17},
+      {From: 22, To: 17},
+      {From: 22, To: 18},
+      {From: 23, To: 18},
+      {From: 23, To: 19},
+      {From: 24, To: 19},
+      {From: 24, To: 20},
+    }},
+    {gamelogic.RED, []gamelogic.BoardMove{
+      {From: 9, To: 13},
+      {From: 9, To: 14},
+      {From: 10, To: 14},
+      {From: 10, To: 15},
+      {From: 11, To: 15},
+      {From: 11, To: 16},
+      {From: 12, To: 16},
+    }},
+  }
+  for _, testCase := range testCases {
+    moves := board.PossibleMovesFor(testCase.Color)
+    slices.SortFunc(moves, func(a, b gamelogic.BoardMove) int {
+      if a.From == b.From {
+        return int(a.To - b.To)
+      }
+      return int(a.From - b.From)
+    })
+    if !reflect.DeepEqual(moves, testCase.Moves) {
+      t.Fatalf("%v expected, %v found", testCase.Moves, moves)
+    }
+  }
+}
