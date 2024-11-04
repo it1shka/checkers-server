@@ -170,31 +170,31 @@ func (board Board) HypotheticalMovesAt(square PieceSquare) ([]BoardMove, bool) {
 }
 
 func (board Board) PossibleMovesFor(color PieceColor) []BoardMove {
-  var boardMoves []BoardMove
-  for i := redStartSquare; i <= blackEndSquare; i++ {
-    square := PieceSquare(i)
-    piece, exists := board.PieceAt(square)
-    if !exists || piece.Color != color {
-      continue
-    }
-    moves, ok := board.HypotheticalMovesAt(square)
-    if !ok {
-      continue
-    }
-    boardMoves = append(boardMoves, moves...)
-  }
-  var hitMoves []BoardMove
-  for _, move := range boardMoves {
-    if move.Hit {
-      hitMoves = append(hitMoves, move)
-    }
-  }
-  if len(hitMoves) > 0 {
-    return hitMoves
-  }
-  return boardMoves
+	var boardMoves []BoardMove
+	for i := redStartSquare; i <= blackEndSquare; i++ {
+		square := PieceSquare(i)
+		piece, exists := board.PieceAt(square)
+		if !exists || piece.Color != color {
+			continue
+		}
+		moves, ok := board.HypotheticalMovesAt(square)
+		if !ok {
+			continue
+		}
+		boardMoves = append(boardMoves, moves...)
+	}
+	var hitMoves []BoardMove
+	for _, move := range boardMoves {
+		if move.Hit {
+			hitMoves = append(hitMoves, move)
+		}
+	}
+	if len(hitMoves) > 0 {
+		return hitMoves
+	}
+	return boardMoves
 }
 
 func (board Board) CurrentPossibleMoves() []BoardMove {
-  return board.PossibleMovesFor(board.turn)
+	return board.PossibleMovesFor(board.turn)
 }
