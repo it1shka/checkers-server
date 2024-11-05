@@ -7,12 +7,34 @@ const (
 	RED   PieceColor = true
 )
 
+func (color PieceColor) Opposite() PieceColor {
+	return !color
+}
+
+func (color PieceColor) String() string {
+	switch color {
+	case BLACK:
+		return "black"
+	default:
+		return "red"
+	}
+}
+
 type PieceType bool
 
 const (
 	MAN  PieceType = false
 	KING PieceType = true
 )
+
+func (ptype PieceType) String() string {
+	switch ptype {
+	case MAN:
+		return "man"
+	default:
+		return "king"
+	}
+}
 
 type PieceSquare int
 

@@ -94,3 +94,18 @@ func TestPositionToSquare(t *testing.T) {
 		}
 	}
 }
+
+func TestOppositeColor(t *testing.T) {
+	testCases := []struct {
+		Current  gamelogic.PieceColor
+		Opposite gamelogic.PieceColor
+	}{
+		{gamelogic.BLACK, gamelogic.RED},
+		{gamelogic.RED, gamelogic.BLACK},
+	}
+	for _, testCase := range testCases {
+		if testCase.Current.Opposite() != testCase.Opposite {
+			t.Fatal("expected different opposite color")
+		}
+	}
+}
