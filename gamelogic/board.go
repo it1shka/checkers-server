@@ -5,21 +5,25 @@ import (
 )
 
 const (
-	boardSize        = 32
-	redStartSquare   = 1
-	redEndSquare     = 12
-	blackStartSquare = 21
-	blackEndSquare   = 32
-	firstRow         = 1
-	lastRow          = 8
-	firstColumn      = 1
-	lastColumn       = 8
-	blackManSymbol   = 'b'
-	redManSymbol     = 'r'
-	blackKingSymbol  = 'B'
-	redKingSymbol    = 'R'
-	emptySymbol      = ' '
-	squareSymbol     = '*'
+	boardSize            = 32
+	redStartSquare       = 1
+	redEndSquare         = 12
+	blackStartSquare     = 21
+	blackEndSquare       = 32
+	firstRow             = 1
+	lastRow              = 8
+	firstColumn          = 1
+	lastColumn           = 8
+	blackKingStartSquare = 1
+	blackKingEndSquare   = 4
+	redKingStartSquare   = 29
+	redKingEndSquare     = 32
+	blackManSymbol       = 'b'
+	redManSymbol         = 'r'
+	blackKingSymbol      = 'B'
+	redKingSymbol        = 'R'
+	emptySymbol          = ' '
+	squareSymbol         = '*'
 )
 
 type Board struct {
@@ -197,4 +201,59 @@ func (board Board) PossibleMovesFor(color PieceColor) []BoardMove {
 
 func (board Board) CurrentPossibleMoves() []BoardMove {
 	return board.PossibleMovesFor(board.turn)
+}
+
+func (board Board) MakeMove(from, to PieceSquare) (Board, bool) {
+	possibleMoves := board.CurrentPossibleMoves()
+	possible := false
+	hit := false
+	for _, move := range possibleMoves {
+		if move.From == from && move.To == to {
+			possible = true
+			hit = move.Hit
+			break
+		}
+	}
+	if !possible {
+		return Board{}, false
+	}
+	fromPosition := from.ToPosition()
+	toPosition := to.ToPosition()
+	middleSquare := PiecePosition{
+		Row:    (fromPosition.Row + toPosition.Row) / 2,
+		Column: (fromPosition.Column + toPosition.Column) / 2,
+	}.ToSquare()
+	var nextPieces []Piece
+	var movingPiece Piece
+	for _, piece := range board.pieces {
+		if piece.Square == from {
+			movingPiece = piece
+			continue
+		}
+		if piece.Square == middleSquare {
+			continue
+		}
+		nextPieces = append(nextPieces, piece)
+	}
+	movingPiece.Square = to
+	if (movingPiece.Color == BLACK && to >= blackKingStartSquare && to <= blackKingEndSquare) ||
+		(movingPiece.Color == RED && to >= redKingStartSquare && to <= redKingEndSquare) {
+		movingPiece.Type = KING
+	}
+	nextPieces = append(nextPieces, movingPiece)
+	nextBoard := Board{
+		turn:   board.turn,
+		pieces: nextPieces,
+	}
+	nextTurn := true
+	if hit {
+		nextPossibleMoves := nextBoard.CurrentPossibleMoves()
+		if len(nextPossibleMoves) > 0 && nextPossibleMoves[0].Hit {
+			nextTurn = false
+		}
+	}
+	if nextTurn {
+		nextBoard.turn = nextBoard.turn.Opposite()
+	}
+	return nextBoard, true
 }

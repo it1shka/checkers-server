@@ -26,7 +26,7 @@ func TestBoardInit(t *testing.T) {
 	}
 }
 
-func TestBoardPieceAt(t *testing.T) {
+func TestPieceAt(t *testing.T) {
 	board := gamelogic.InitBoard()
 	testCases := []struct {
 		Square gamelogic.PieceSquare
@@ -130,5 +130,47 @@ func TestPossibleMovesFor(t *testing.T) {
 		if !reflect.DeepEqual(moves, testCase.Moves) {
 			t.Fatalf("%v expected, %v found", testCase.Moves, moves)
 		}
+	}
+}
+
+func TestMakeMove(t *testing.T) {
+	board := gamelogic.InitBoard()
+	moves := []struct {
+		From gamelogic.PieceSquare
+		To   gamelogic.PieceSquare
+	}{
+		{21, 17},
+		{10, 14},
+		{17, 10},
+		{7, 14},
+		{24, 19},
+		{11, 15},
+		{19, 10},
+	}
+	for _, move := range moves {
+		nextBoard, ok := board.MakeMove(move.From, move.To)
+		t.Logf("Board:\n%s\n", nextBoard)
+		t.Logf("Next turn: %s\n", nextBoard.Turn())
+		if !ok {
+			t.Fatalf(
+				"move from %d to %d failed",
+				move.From,
+				move.To,
+			)
+		}
+		board = nextBoard
+	}
+	expectedBoard := strings.Join([]string{
+		" r r r r",
+		"r r * r ",
+		" r b * r",
+		"* r * * ",
+		" * * * *",
+		"* b b * ",
+		" b b b b",
+		"b b b b ",
+	}, "\n")
+	if board.String() != expectedBoard {
+		t.Fatalf("%s\nexpected, found\n%s", expectedBoard, board)
 	}
 }
