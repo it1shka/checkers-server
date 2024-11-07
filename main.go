@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"it1shka.com/checkers-server/testapp"
+)
 
 func main() {
-	fmt.Println("TODO: implement server here")
+	testapp.RunLocally()
 }

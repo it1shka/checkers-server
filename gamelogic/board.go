@@ -230,7 +230,7 @@ func (board Board) MakeMove(from, to PieceSquare) (Board, bool) {
 			movingPiece = piece
 			continue
 		}
-		if piece.Square == middleSquare {
+		if hit && piece.Square == middleSquare {
 			continue
 		}
 		nextPieces = append(nextPieces, piece)
