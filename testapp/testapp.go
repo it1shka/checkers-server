@@ -12,11 +12,11 @@ import (
 
 func RunLocally() {
 	clearTerminal()
-	bot := chooseBot()
+	currentBot := chooseBot()
 	board := gamelogic.InitBoard()
 	for {
 		clearTerminal()
-		fmt.Printf("Playing agains: %s\n", bot.Name())
+		fmt.Printf("Playing agains: %s\n", currentBot.Name())
 		fmt.Println()
 		fmt.Println(board)
 		fmt.Println()
@@ -44,7 +44,7 @@ func RunLocally() {
 			}
 			continue
 		}
-		move, ok := bot.Move(board)
+		move, ok := currentBot.Move(board)
 		if !ok {
 			fmt.Println("Bot failed. Aborting")
 			break
