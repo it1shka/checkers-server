@@ -84,7 +84,7 @@ func (bot BotMinimax) Move(board gamelogic.Board) (gamelogic.BoardMove, bool) {
 		return gamelogic.BoardMove{}, false
 	}
 	var bestMove gamelogic.BoardMove
-	bestScore := float32(0.0)
+	bestScore := float32(math.Inf(-1))
 	rnd := rand.New(rand.NewSource(time.Now().Unix()))
 	rnd.Shuffle(len(moves), func(i, j int) {
 		moves[i], moves[j] = moves[j], moves[i]
