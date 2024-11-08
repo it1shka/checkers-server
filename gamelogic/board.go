@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	boardSize            = 32
+	initialPieceAmount   = 24
 	redStartSquare       = 1
 	redEndSquare         = 12
 	blackStartSquare     = 21
@@ -38,7 +38,7 @@ type BoardMove struct {
 }
 
 func InitBoard() Board {
-	pieces := make([]Piece, boardSize)
+	pieces := make([]Piece, initialPieceAmount)
 	index := 0
 	for i := redStartSquare; i <= redEndSquare; i++ {
 		pieces[index] = Piece{
