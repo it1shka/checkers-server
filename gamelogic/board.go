@@ -37,6 +37,10 @@ type BoardMove struct {
 	Hit  bool
 }
 
+func UnsafeInitBoard(turn PieceColor, pieces []Piece) Board {
+	return Board{turn, pieces}
+}
+
 func InitBoard() Board {
 	pieces := make([]Piece, initialPieceAmount)
 	index := 0
@@ -62,6 +66,13 @@ func InitBoard() Board {
 	}
 }
 
+func (board Board) Copy() Board {
+	return Board{
+		turn:   board.Turn(),
+		pieces: board.Pieces(),
+	}
+}
+
 func (board Board) Turn() PieceColor {
 	return board.turn
 }
@@ -70,6 +81,10 @@ func (board Board) Pieces() []Piece {
 	output := make([]Piece, len(board.pieces))
 	copy(output, board.pieces)
 	return output
+}
+
+func (board Board) UnsafePieces() []Piece {
+	return board.pieces
 }
 
 func (board Board) String() string {

@@ -6,40 +6,44 @@ import (
 	"log"
 	"net/http"
 
-	"it1shka.com/checkers-server/gamelogic"
+	"github.com/gorilla/websocket"
+	"it1shka.com/checkers-server/bot"
 )
 
-const (
-	BLACK = "black"
-	RED   = "red"
-	MAN   = "man"
-	KING  = "king"
-)
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 func RunTestApp() {
 	fmt.Println("Running on: http://localhost:3333/")
 	fileServer := http.FileServer(http.Dir("./testapp/webapp"))
 	http.Handle("/", fileServer)
-	http.HandleFunc("/api/start-game", handleStartGame)
+	http.HandleFunc("/ws-connect", handleWebsocket)
+	http.HandleFunc("/bot-names", handleBotNames)
+
 	err := http.ListenAndServe(":3333", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func writeBoard(w http.ResponseWriter, board gamelogic.Board) {
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(map[string]any{
-		"pieces": board.Pieces(),
-		"status": "active",
-	})
+func handleWebsocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		message := "Serialization error"
-		http.Error(w, message, http.StatusInternalServerError)
+		log.Println(err)
+		http.Error(w, "failed to upgrade connection", http.StatusInternalServerError)
+		return
 	}
+	defer conn.Close()
+	botName := r.URL.Query().Get("bot")
+	playerColor := r.URL.Query().Get("color")
+	handleGame(conn, botName, playerColor)
 }
 
-func handleStartGame(w http.ResponseWriter, r *http.Request) {
-	board := gamelogic.InitBoard()
-	writeBoard(w, board)
+func handleBotNames(w http.ResponseWriter, r *http.Request) {
+	botNames := bot.GetBotNames()
+	if err := json.NewEncoder(w).Encode(botNames); err != nil {
+		http.Error(w, "serialization failure", http.StatusInternalServerError)
+	}
 }

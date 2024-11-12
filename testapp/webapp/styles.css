@@ -1,8 +1,3 @@
-:root {
-  --board-size: 8;
-  --square-size: 50px;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -10,70 +5,12 @@
 }
 
 body {
-  font-family: monospace;
-  background-color: #fafafa;
+  font-family: sans-serif;
+}
+
+#app {
   width: 100vw;
   height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.container {
-  display: flex;
-  gap: 32px;
-}
-
-.checkers-board {
   display: grid;
-  grid-template-rows: repeat(
-    var(--board-size), 
-    var(--square-size)
-  );
-  grid-template-columns: repeat(
-    var(--board-size),
-    var(--square-size)
-  );
-}
-
-.controls {
-  min-width: 460px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-
-  button {
-    padding: 8px;
-    border: 1px solid #ccc;
-  }
-}
-
-.checkers-board {
-  .red {
-    background-color: red;
-    border: 2px solid red;
-  }
-  .black {
-    background-color: black;
-    border: 2px solid black;
-    &.chosen, &:hover {
-      border: 2px solid white;
-    }
-  }
-}
-
-.checkers-board + h2 {
-  margin-top: 16px;
-}
-
-.checker {
-  width: 100%; height: 100%;
-  border-radius: 100%;
-  &.red-checker {
-    border: 2px solid red;
-  }
-  &.black-checker {
-    border: 2px solid white;
-  }
+  place-items: center;
 }
