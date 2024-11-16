@@ -1,20 +1,20 @@
-import { onMounted } from 'vue'
+import { onMounted, watchEffect } from 'vue'
 import useSettingsState, { Color } from './useSettingsState.js'
 
 export default {
   setup() {
-    const {
-      settingsState,
-      fetchBots,
-    } = useSettingsState()
+    const settingsStateStore = useSettingsState()
+    const { settingsState, fetchBots } = settingsStateStore
 
     onMounted(() => {
-      fetchBots().then(() => {
-        if (settingsState.bots.length <= 0) {
-          return
-        }
-        settingsState.bot = settingsState.bots[0]
-      })
+      fetchBots()
+    })
+
+    watchEffect(() => {
+      if (!settingsState.bots || settingsState.bots.length <= 0) {
+        return
+      }
+      settingsState.bot = settingsState.bots[0]
     })
 
     return {

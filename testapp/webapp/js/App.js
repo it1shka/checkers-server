@@ -1,24 +1,33 @@
+import { storeToRefs } from 'pinia'
 import Settings from './Settings.js'
-import useSettingsState from './useSettingsState.js'
+import Board from './Board.js'
 import useWebsocket from './useWebsocket.js'
-
-// TODO: conditionally render Settings here
 
 export default {
   setup() {
-    const { settingsState } = useSettingsState()
-    const { websocket } = useWebsocket()
-    
+    const websocketStore = useWebsocket()
+    const { connected } = storeToRefs(websocketStore)
+    const { startConnection } = websocketStore
+
+    return { 
+      connected, 
+      startConnection
+    }
   },
   components: {
     Settings,
+    Board,
   },
   template: `
-    <div class="menu">
+    <div class="menu" v-if="!connected">
       <Settings />
-      <button class="menu__button-start">
+      <button 
+        class="menu__button-start"
+        @click="startConnection"
+      >
         Start
       </button>
     </div>
+    <Board v-else/>
   `,
 }
