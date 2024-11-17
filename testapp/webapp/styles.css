@@ -77,17 +77,32 @@ body {
     grid-template-rows: repeat(8, 1fr);
     grid-template-columns: repeat(8, 1fr);
     border: 1px solid #ccc;
+    &.red {
+      transform: rotate(180deg);
+    }
     .board__grid__cell {
       background-color: red;
     }
     .board__grid__square {
       position: relative;
       background-color: black;
-      p {
+      border: 2px solid black;
+      .square-number {
         position: absolute;
         top: 2px;
         left: 2px;
         color: grey;
+        &.red {
+          transform: rotate(180deg);
+          top: unset;
+          left: unset;
+          bottom: 2px;
+          right: 2px;
+          border: 2px solid red;
+        }
+      }
+      &:hover, &.chosen {
+        border: 2px solid lightcyan;
       }
     }
   }
@@ -107,4 +122,27 @@ body {
   right: 10px;
   border: 1px solid #ccc;
   padding: 0.5em;
+}
+
+.piece-body {
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+  --border-size: 2px;
+
+  &.red {
+    border: var(--border-size) solid red;
+  }
+
+  &.black {
+    border: var(--border-size) solid white;
+  }
+
+  &.red.king {
+    border: calc(var(--border-size) * 2) dashed red;
+  }
+
+  &.black.king {
+    border: calc(var(--border-size) * 2) dashed white;
+  }
 }

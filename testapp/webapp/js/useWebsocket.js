@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import useSettingsState from './useSettingsState.js'
 
@@ -9,7 +9,7 @@ const useWebsocket = defineStore('websocket', () => {
   const connected = ref(false)
 
   const settingsStateStore = useSettingsState()
-  const { settingsState } = storeToRefs(settingsStateStore)
+  const { settingsState } = settingsStateStore
 
   const startConnection = () => {
     const url = new URL(CONNECTION_URL)
