@@ -78,6 +78,33 @@ body {
     grid-template-columns: repeat(8, 1fr);
     border: 1px solid #ccc;
     .board__grid__cell {
+      background-color: red;
+    }
+    .board__grid__square {
+      position: relative;
+      background-color: black;
+      p {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        color: grey;
+      }
     }
   }
+}
+
+.btn-disconnect {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  border: 1px solid #ccc;
+  padding: 0.5em;
+}
+
+.btn-restart {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  border: 1px solid #ccc;
+  padding: 0.5em;
 }
