@@ -142,7 +142,9 @@ export default {
             board__grid__square: isSquare(index),
             chosen: isSquare(index) && squareIndex(index) === chosenSquare,
           }"
-          @click.stop="isSquare(index) && chooseSquare(squareIndex(index))"
+          @click.stop="isSquare(index) 
+            ? chooseSquare(squareIndex(index)) 
+            : (chosenSquare = null)"
         >
           <p :class="{
             'square-number': true,
@@ -164,10 +166,14 @@ export default {
         </div>
       </div>
       <div class="board__turn">
-        <p>Current turn: 
+        <p v-if="!winner">
+          Current turn: 
           <span :style="{ color: currentTurn }">
             {{ currentTurn }}
           </span>
+        </p>
+        <p v-else>
+          Winner: {{ winner }}
         </p>
       </div>
     </div>

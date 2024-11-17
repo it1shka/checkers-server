@@ -82,6 +82,7 @@ body {
     }
     .board__grid__cell {
       background-color: red;
+      border: 2px solid red;
     }
     .board__grid__square {
       position: relative;
@@ -98,7 +99,6 @@ body {
           left: unset;
           bottom: 2px;
           right: 2px;
-          border: 2px solid red;
         }
       }
       &:hover, &.chosen {

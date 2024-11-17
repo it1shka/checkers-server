@@ -56,7 +56,7 @@ func (p *player) handleMessage(msg map[string]any) {
 		if !ok {
 			return
 		}
-		from, ok := rawFrom.(int)
+		from, ok := rawFrom.(float64)
 		if !ok {
 			return
 		}
@@ -64,7 +64,7 @@ func (p *player) handleMessage(msg map[string]any) {
 		if !ok {
 			return
 		}
-		to, ok := rawTo.(int)
+		to, ok := rawTo.(float64)
 		if !ok {
 			return
 		}
