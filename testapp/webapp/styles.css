@@ -1,0 +1,148 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: #fafafa;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.settings {
+  min-width: min(460px, 100vw);
+  background-color: white;
+  padding: 2em 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  border: 1px solid #ccc;
+
+  .settings__select {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+
+    label {
+      color: grey;
+    }
+
+    select {
+      min-width: 200px;
+      border: none;
+      padding: 0.5em;
+      border: 1px solid #ccc;
+    }
+  }
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+
+  .menu__button-start {
+    border: none;
+    padding: 0.5em 1em;
+    border: 1px solid #ccc;
+  }
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+
+  .board__statusbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .board__grid {
+    display: grid;
+    width: 600px;
+    height: 600px;
+    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(8, 1fr);
+    border: 1px solid #ccc;
+    &.red {
+      transform: rotate(180deg);
+    }
+    .board__grid__cell {
+      background-color: red;
+      border: 2px solid red;
+    }
+    .board__grid__square {
+      position: relative;
+      background-color: black;
+      border: 2px solid black;
+      .square-number {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        color: grey;
+        &.red {
+          transform: rotate(180deg);
+          top: unset;
+          left: unset;
+          bottom: 2px;
+          right: 2px;
+        }
+      }
+      &:hover, &.chosen {
+        border: 2px solid lightcyan;
+      }
+    }
+  }
+}
+
+.btn-disconnect {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  border: 1px solid #ccc;
+  padding: 0.5em;
+}
+
+.btn-restart {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  border: 1px solid #ccc;
+  padding: 0.5em;
+}
+
+.piece-body {
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+  --border-size: 2px;
+
+  &.red {
+    border: var(--border-size) solid red;
+  }
+
+  &.black {
+    border: var(--border-size) solid white;
+  }
+
+  &.red.king {
+    border: calc(var(--border-size) * 2) dashed red;
+  }
+
+  &.black.king {
+    border: calc(var(--border-size) * 2) dashed white;
+  }
+}
