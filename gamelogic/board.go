@@ -27,8 +27,10 @@ const (
 )
 
 type Board struct {
-	turn   PieceColor
-	pieces []Piece
+	turn          PieceColor
+	pieces        []Piece
+	multijump     bool
+	multijumpFrom PieceSquare
 }
 
 type BoardMove struct {
@@ -38,7 +40,12 @@ type BoardMove struct {
 }
 
 func UnsafeInitBoard(turn PieceColor, pieces []Piece) Board {
-	return Board{turn, pieces}
+	return Board{
+		turn:          turn,
+		pieces:        pieces,
+		multijump:     false,
+		multijumpFrom: -1,
+	}
 }
 
 func InitBoard() Board {
@@ -61,15 +68,19 @@ func InitBoard() Board {
 		index++
 	}
 	return Board{
-		turn:   BLACK,
-		pieces: pieces,
+		turn:          BLACK,
+		pieces:        pieces,
+		multijump:     false,
+		multijumpFrom: -1,
 	}
 }
 
 func (board Board) Copy() Board {
 	return Board{
-		turn:   board.Turn(),
-		pieces: board.Pieces(),
+		turn:          board.Turn(),
+		pieces:        board.Pieces(),
+		multijump:     board.multijump,
+		multijumpFrom: board.multijumpFrom,
 	}
 }
 
@@ -189,6 +200,20 @@ func (board Board) HypotheticalMovesAt(square PieceSquare) ([]BoardMove, bool) {
 }
 
 func (board Board) PossibleMovesFor(color PieceColor) []BoardMove {
+	if board.multijump {
+		multijumpMoves, ok := board.HypotheticalMovesAt(board.multijumpFrom)
+		if !ok {
+			return []BoardMove{}
+		}
+		var hitMoves []BoardMove
+		for _, move := range multijumpMoves {
+			if !move.Hit {
+				continue
+			}
+			hitMoves = append(hitMoves, move)
+		}
+		return hitMoves
+	}
 	var boardMoves []BoardMove
 	for i := redStartSquare; i <= blackEndSquare; i++ {
 		square := PieceSquare(i)
@@ -257,8 +282,10 @@ func (board Board) MakeMove(from, to PieceSquare) (Board, bool) {
 	}
 	nextPieces = append(nextPieces, movingPiece)
 	nextBoard := Board{
-		turn:   board.turn,
-		pieces: nextPieces,
+		turn:          board.turn,
+		pieces:        nextPieces,
+		multijump:     true,
+		multijumpFrom: to,
 	}
 	nextTurn := true
 	if hit {
@@ -269,6 +296,8 @@ func (board Board) MakeMove(from, to PieceSquare) (Board, bool) {
 	}
 	if nextTurn {
 		nextBoard.turn = nextBoard.turn.Opposite()
+		nextBoard.multijump = false
+		nextBoard.multijumpFrom = -1
 	}
 	return nextBoard, true
 }
