@@ -185,39 +185,30 @@ func handleGame(conn *websocket.Conn, botName, playerColor string) {
 	go player.handle()
 	go enemy.handle()
 
-	var boardMemory map[string]int
-	var currentBoard gamelogic.Board
+	var session *gamelogic.GameSession
 
 	startGame := func() {
-		boardMemory = make(map[string]int)
-		currentBoard = gamelogic.InitBoard()
-		boardMemory[currentBoard.String()] = 1
-		playerBoard <- currentBoard.Copy()
-		enemyBoard <- currentBoard.Copy()
+		session = gamelogic.NewGameSession()
+		playerBoard <- session.Board().Copy()
+		enemyBoard <- session.Board().Copy()
 	}
 
-	makeMove := func(mv move) {
-		nextBoard, ok := currentBoard.MakeMove(mv.from, mv.to)
-		if !ok {
-			return
-		}
-		currentBoard = nextBoard
-		boardMemory[nextBoard.String()]++
-		playerBoard <- nextBoard.Copy()
-		enemyBoard <- nextBoard.Copy()
-
-		if len(nextBoard.CurrentPossibleMoves()) <= 0 {
-			wnr := nextBoard.Turn().Opposite()
-			if wnr == gamelogic.BLACK {
-				winner <- "black"
-			} else {
-				winner <- "red"
-			}
+	makeMove := func(attacker gamelogic.PieceColor, mv move) {
+		result := session.MakeMove(attacker, mv.from, mv.to)
+		if !result {
 			return
 		}
 
-		if boardMemory[nextBoard.String()] >= 3 {
+		playerBoard <- session.Board().Copy()
+		enemyBoard <- session.Board().Copy()
+
+		switch session.Status() {
+		case gamelogic.DRAW:
 			winner <- "draw"
+		case gamelogic.BLACK_WIN:
+			winner <- "black"
+		case gamelogic.RED_WIN:
+			winner <- "red"
 		}
 	}
 
@@ -234,13 +225,9 @@ PrimaryForSelect:
 		case <-done:
 			break PrimaryForSelect
 		case mv := <-playerMoves:
-			if currentBoard.Turn() == playerTurn {
-				makeMove(mv)
-			}
+			makeMove(playerTurn, mv)
 		case mv := <-enemyMoves:
-			if currentBoard.Turn() == playerTurn.Opposite() {
-				makeMove(mv)
-			}
+			makeMove(playerTurn.Opposite(), mv)
 		}
 	}
 }
