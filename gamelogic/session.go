@@ -17,10 +17,13 @@ const (
 )
 
 const (
-	emptyTag = 'X'
-	redTag   = 'R'
-	blackTag = 'B'
-	delimTag = ';'
+	emptyTag     = 'X'
+	redTurnTag   = '0'
+	blackTurnTag = '1'
+	redManTag    = 'r'
+	blackManTag  = 'b'
+	redKingTag   = 'R'
+	blackKingTag = 'B'
 )
 
 type GameSession struct {
@@ -33,11 +36,10 @@ type GameSession struct {
 func identify(board Board) string {
 	var builder strings.Builder
 	if board.turn == BLACK {
-		builder.WriteRune(blackTag)
+		builder.WriteRune(blackTurnTag)
 	} else {
-		builder.WriteRune(redTag)
+		builder.WriteRune(redTurnTag)
 	}
-	builder.WriteRune(delimTag)
 	for i := redStartSquare; i <= blackEndSquare; i++ {
 		square := PieceSquare(i)
 		piece, exists := board.PieceAt(square)
@@ -45,13 +47,18 @@ func identify(board Board) string {
 		switch {
 		case !exists:
 			runeTag = emptyTag
-		case piece.Color == BLACK:
-			runeTag = blackTag
+		case piece.Color == BLACK && piece.Type == MAN:
+			runeTag = blackManTag
+		case piece.Color == BLACK && piece.Type == KING:
+			runeTag = blackKingTag
+		case piece.Color == RED && piece.Type == MAN:
+			runeTag = redManTag
+		case piece.Color == RED && piece.Type == KING:
+			runeTag = redKingTag
 		default:
-			runeTag = redTag
+			runeTag = emptyTag
 		}
 		builder.WriteRune(runeTag)
-		builder.WriteRune(delimTag)
 	}
 	return builder.String()
 }
