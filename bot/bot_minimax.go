@@ -46,6 +46,7 @@ type BotMinimaxConfig struct {
 	CenterBonus   float32
 	EdgeBonus     float32
 	BackrankBonus float32
+	Optimized     bool
 }
 
 func GetDefaultBotMinimaxConfig() BotMinimaxConfig {
@@ -56,6 +57,7 @@ func GetDefaultBotMinimaxConfig() BotMinimaxConfig {
 		CenterBonus:   0.25,
 		EdgeBonus:     0.25,
 		BackrankBonus: 0.5,
+		Optimized:     true,
 	}
 }
 
@@ -91,7 +93,18 @@ func (bot BotMinimax) Move(board gamelogic.Board) (gamelogic.BoardMove, bool) {
 	})
 	for _, move := range moves {
 		nextBoard, _ := board.MakeMove(move.From, move.To)
-		score := bot.minimax(nextBoard, bot.depth, board.Turn())
+		var score float32
+		if bot.config.Optimized {
+			score = bot.minimaxOptimized(
+				nextBoard,
+				bot.depth,
+				board.Turn(),
+				float32(math.Inf(-1)),
+				float32(math.Inf(1)),
+			)
+		} else {
+			score = bot.minimax(nextBoard, bot.depth, board.Turn())
+		}
 		if score > bestScore {
 			bestScore = score
 			bestMove = move
@@ -122,6 +135,50 @@ func (bot BotMinimax) minimax(board gamelogic.Board, depth uint, maximizing game
 		}
 	}
 	return output
+}
+
+func (bot BotMinimax) minimaxOptimized(
+	board gamelogic.Board,
+	depth uint,
+	maximizing gamelogic.PieceColor,
+	alpha float32,
+	beta float32,
+) float32 {
+	if depth == 0 {
+		return bot.evaluate(board, maximizing)
+	}
+	moves := board.CurrentPossibleMoves()
+	if len(moves) <= 0 {
+		return bot.evaluate(board, maximizing)
+	}
+
+	score := float32(math.Inf(-1))
+	if board.Turn() != maximizing {
+		score = float32(math.Inf(1))
+	}
+
+	for _, move := range moves {
+		nextBoard, ok := board.MakeMove(move.From, move.To)
+		if !ok {
+			continue
+		}
+		localScore := bot.minimaxOptimized(nextBoard, depth-1, maximizing, alpha, beta)
+		if board.Turn() == maximizing {
+			score = max(localScore, score)
+			if score >= beta {
+				return score
+			}
+			alpha = max(alpha, score)
+		} else {
+			score = min(localScore, score)
+			if score <= alpha {
+				return score
+			}
+			beta = min(beta, score)
+		}
+	}
+
+	return score
 }
 
 func (bot BotMinimax) evaluate(board gamelogic.Board, player gamelogic.PieceColor) float32 {
