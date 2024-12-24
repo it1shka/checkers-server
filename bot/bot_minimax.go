@@ -33,7 +33,7 @@ func getBlackBackrank() []gamelogic.PieceSquare {
 	}
 }
 
-func getRedBlackrank() []gamelogic.PieceSquare {
+func getRedBackrank() []gamelogic.PieceSquare {
 	return []gamelogic.PieceSquare{
 		25, 26, 27, 28,
 	}
@@ -160,7 +160,7 @@ func (bot BotMinimax) evaluate(board gamelogic.Board, player gamelogic.PieceColo
 		if piece.Color == gamelogic.BLACK {
 			backrank = getBlackBackrank()
 		} else {
-			backrank = getRedBlackrank()
+			backrank = getRedBackrank()
 		}
 		for _, backrankSquare := range backrank {
 			if piece.Square == backrankSquare {
