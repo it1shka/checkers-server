@@ -13,6 +13,7 @@ func GetBots() []Bot {
 		InitBotMinimax(2),
 		InitBotMinimax(4),
 		InitBotMinimax(6),
+		InitBotMinimax(10),
 	}
 }
 
