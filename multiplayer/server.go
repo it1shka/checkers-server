@@ -1,15 +1,26 @@
 package multiplayer
 
-import "github.com/gorilla/websocket"
+import (
+	"encoding/json"
+
+	"github.com/gorilla/websocket"
+)
 
 type Server struct {
-	uuids UUIDs
+	uuids      UUIDs
+	dispatcher map[string]func(*websocket.Conn, json.RawMessage)
 }
 
 func NewServer() *Server {
-	return &Server{
-		uuids: InitUUIDs(),
+	server := &Server{
+		uuids:      InitUUIDs(),
+		dispatcher: nil,
 	}
+	server.dispatcher = map[string]func(*websocket.Conn, json.RawMessage){
+		CLT_MSG_JOIN:  server.handleClientJoin,
+		CLT_MSG_LEAVE: server.handleClientLeave,
+	}
+	return server
 }
 
 func (server *Server) HandleConnection(conn *websocket.Conn) {
@@ -22,5 +33,24 @@ func (server *Server) HandleConnection(conn *websocket.Conn) {
 	defer server.uuids.DeactivateFor(conn)
 	MessageUUID(id).SendTo(conn)
 
-	// TODO: ...
+	for {
+		var message ClientMessage
+		if err := conn.ReadJSON(&message); err != nil {
+			MessageCrash("failed to read message").SendTo(conn)
+			continue
+		}
+		if handler, ok := server.dispatcher[message.Type]; ok {
+			handler(conn, message.Payload)
+		} else {
+			MessageCrash("received unknown message type").SendTo(conn)
+		}
+	}
+}
+
+func (server *Server) handleClientJoin(conn *websocket.Conn, payload json.RawMessage) {
+	// TODO: request to enter the queue
+}
+
+func (server *Server) handleClientLeave(conn *websocket.Conn, payload json.RawMessage) {
+	// TODO: request to leave the queue
 }
