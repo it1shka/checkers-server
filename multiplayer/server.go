@@ -1,56 +1,72 @@
 package multiplayer
 
 import (
-	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 
+	"github.com/gorilla/schema"
 	"github.com/gorilla/websocket"
 )
 
+const SERVER_READ_BUFFER_SIZE = 1024
+const SERVER_WRITE_BUFFER_SIZE = 1024
+
 type Server struct {
-	uuids      UUIDs
-	dispatcher map[string]func(*websocket.Conn, json.RawMessage)
+	port     string
+	upgrader websocket.Upgrader
+	decoder  *schema.Decoder
+	players  *PlayerCollection
 }
 
-func NewServer() *Server {
-	server := &Server{
-		uuids:      InitUUIDs(),
-		dispatcher: nil,
+// Note: to start server, use the following:
+// NewServer("<your port>").Start()
+func NewServer(port string) *Server {
+	return &Server{
+		port: port,
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  SERVER_READ_BUFFER_SIZE,
+			WriteBufferSize: SERVER_WRITE_BUFFER_SIZE,
+		},
+		decoder: schema.NewDecoder(),
+		players: NewPlayerCollection(),
 	}
-	server.dispatcher = map[string]func(*websocket.Conn, json.RawMessage){
-		CLT_MSG_JOIN:  server.handleClientJoin,
-		CLT_MSG_LEAVE: server.handleClientLeave,
-	}
-	return server
 }
 
-func (server *Server) HandleConnection(conn *websocket.Conn) {
-	defer conn.Close()
-	id, ok := server.uuids.GenerateFor(conn)
-	if !ok {
-		MessageCrash("failed to register connection").SendTo(conn)
+func (s *Server) GetPort() string {
+	return s.port
+}
+
+func (s *Server) Start() {
+	fmt.Printf("Running multiplayer on: %s\n", s.port)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ws-connect", s.handleRequest)
+	if err := http.ListenAndServe(s.port, mux); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
+	var player Player
+	if err := s.decoder.Decode(&player, r.URL.Query()); err != nil {
+		log.Println(err)
+		http.Error(w, "failed to parse your request", http.StatusBadRequest)
 		return
 	}
-	defer server.uuids.DeactivateFor(conn)
-	MessageUUID(id).SendTo(conn)
 
-	for {
-		var message ClientMessage
-		if err := conn.ReadJSON(&message); err != nil {
-			MessageCrash("failed to read message").SendTo(conn)
-			continue
-		}
-		if handler, ok := server.dispatcher[message.Type]; ok {
-			handler(conn, message.Payload)
-		} else {
-			MessageCrash("received unknown message type").SendTo(conn)
-		}
+	conn, err := s.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to upgrade connection", http.StatusMethodNotAllowed)
+		return
 	}
-}
 
-func (server *Server) handleClientJoin(conn *websocket.Conn, payload json.RawMessage) {
-	// TODO: request to enter the queue
-}
+	player.Conn = conn
 
-func (server *Server) handleClientLeave(conn *websocket.Conn, payload json.RawMessage) {
-	// TODO: request to leave the queue
+	// TODO: nickname and rating should be
+	// TODO: pulled out of the database -- never trust the frontend
+
+	// TODO: handle connection
+	fmt.Printf("%v", player)
+	conn.Close()
 }
