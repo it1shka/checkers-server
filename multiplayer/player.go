@@ -8,9 +8,9 @@ import (
 
 type Player struct {
 	Conn     *websocket.Conn
-	ID       string `schema:"id"`
 	Nickname string `schema:"nickname"`
 	Rating   uint   `schema:"rating"`
+	Region   string `schema:"region"`
 }
 
 type PlayerCollection struct {

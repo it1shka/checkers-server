@@ -15,15 +15,14 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func RunTestApp() {
-	fmt.Println("Running on: http://localhost:3333/")
+func RunTestApp(port string) {
+	fmt.Printf("Running test frontend on host: http://localhost%s\n", port)
+	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./testapp/webapp"))
-	http.Handle("/", fileServer)
-	http.HandleFunc("/ws-connect", handleWebsocket)
-	http.HandleFunc("/bot-names", handleBotNames)
-
-	err := http.ListenAndServe(":3333", nil)
-	if err != nil {
+	mux.Handle("/", fileServer)
+	mux.HandleFunc("/ws-connect", handleWebsocket)
+	mux.HandleFunc("/bot-names", handleBotNames)
+	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatal(err)
 	}
 }

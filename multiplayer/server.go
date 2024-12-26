@@ -13,17 +13,13 @@ const SERVER_READ_BUFFER_SIZE = 1024
 const SERVER_WRITE_BUFFER_SIZE = 1024
 
 type Server struct {
-	port     string
 	upgrader websocket.Upgrader
 	decoder  *schema.Decoder
 	players  *PlayerCollection
 }
 
-// Note: to start server, use the following:
-// NewServer("<your port>").Start()
-func NewServer(port string) *Server {
+func NewServer() *Server {
 	return &Server{
-		port: port,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  SERVER_READ_BUFFER_SIZE,
 			WriteBufferSize: SERVER_WRITE_BUFFER_SIZE,
@@ -33,15 +29,11 @@ func NewServer(port string) *Server {
 	}
 }
 
-func (s *Server) GetPort() string {
-	return s.port
-}
-
-func (s *Server) Start() {
-	fmt.Printf("Running multiplayer on: %s\n", s.port)
+func (s *Server) Start(port string) {
+	fmt.Printf("Running multiplayer on port: %s\n", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws-connect", s.handleRequest)
-	if err := http.ListenAndServe(s.port, mux); err != nil {
+	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatal(err)
 	}
 }
