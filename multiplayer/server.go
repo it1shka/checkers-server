@@ -1,6 +1,7 @@
 package multiplayer
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,21 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/gorilla/websocket"
 )
+
+// Additional record types
+
+type RequestMetadata struct {
+	Nickname string `schema:"nickname"`
+	Rating   uint   `schema:"rating"`
+	Region   string `schema:"region"`
+}
+
+type IncomingMessage struct {
+	Type    string          `json:"type"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+// Server implementation
 
 const SERVER_READ_BUFFER_SIZE = 1024
 const SERVER_WRITE_BUFFER_SIZE = 1024
@@ -37,8 +53,8 @@ func (s *Server) Start(port string) {
 }
 
 func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
-	var player Player
-	if err := s.decoder.Decode(&player, r.URL.Query()); err != nil {
+	var metadata RequestMetadata
+	if err := s.decoder.Decode(&metadata, r.URL.Query()); err != nil {
 		log.Println(err)
 		http.Error(w, "failed to parse your request", http.StatusBadRequest)
 		return
@@ -49,23 +65,25 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to upgrade connection", http.StatusMethodNotAllowed)
 		return
 	}
-	player.Conn = conn
-  go s.handlePlayer(player)
+
+	// TODO: use metadata somehow
+	log.Printf("Metadata: %v\n", metadata)
+
+	go s.handleConnection(conn)
 }
 
-func (s *Server) handlePlayer(player Player) {
-  defer s.cleanupPlayer(player)
-  for {
-    var message ClientMessage
-    if err := player.Conn.ReadJSON(&message); err != nil {
-      log.Println(err)
-      return
-    }
-    // TODO: ...
-    log.Printf("%v\n", message)
-  }
-}
+func (s *Server) handleConnection(conn *websocket.Conn) {
+	defer conn.Close()
+	for {
+		var message IncomingMessage
+		if err := conn.ReadJSON(&message); err != nil {
+			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
+				log.Println(err)
+			}
+			return
+		}
 
-func (s *Server) cleanupPlayer(player Player) {
-  player.Conn.Close()
+		// TODO: ...
+		log.Printf("Message: %v\n", message)
+	}
 }
