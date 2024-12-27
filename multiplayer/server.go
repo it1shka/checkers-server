@@ -15,7 +15,6 @@ const SERVER_WRITE_BUFFER_SIZE = 1024
 type Server struct {
 	upgrader websocket.Upgrader
 	decoder  *schema.Decoder
-	players  *PlayerCollection
 }
 
 func NewServer() *Server {
@@ -25,7 +24,6 @@ func NewServer() *Server {
 			WriteBufferSize: SERVER_WRITE_BUFFER_SIZE,
 		},
 		decoder: schema.NewDecoder(),
-		players: NewPlayerCollection(),
 	}
 }
 
@@ -45,20 +43,29 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to parse your request", http.StatusBadRequest)
 		return
 	}
-
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to upgrade connection", http.StatusMethodNotAllowed)
 		return
 	}
-
 	player.Conn = conn
+  go s.handlePlayer(player)
+}
 
-	// TODO: nickname and rating should be
-	// TODO: pulled out of the database -- never trust the frontend
+func (s *Server) handlePlayer(player Player) {
+  defer s.cleanupPlayer(player)
+  for {
+    var message ClientMessage
+    if err := player.Conn.ReadJSON(&message); err != nil {
+      log.Println(err)
+      return
+    }
+    // TODO: ...
+    log.Printf("%v\n", message)
+  }
+}
 
-	// TODO: handle connection
-	fmt.Printf("%v", player)
-	conn.Close()
+func (s *Server) cleanupPlayer(player Player) {
+  player.Conn.Close()
 }
