@@ -16,21 +16,21 @@ type Update struct {
 
 // Session implementation
 
+// TODO: add timers for both players
+
 type Session[P comparable] struct {
 	session     *gamelogic.GameSession
 	playerBlack P
 	playerRed   P
 	moves       chan PlayerMove[P]
-	updateHook  func(update Update)
 }
 
-func NewSession[P comparable](playerBlack, playerRed P, updateHook func(update Update)) *Session[P] {
+func NewSession[P comparable](playerBlack, playerRed P) *Session[P] {
 	return &Session[P]{
 		session:     gamelogic.NewGameSession(),
 		playerBlack: playerBlack,
 		playerRed:   playerRed,
 		moves:       make(chan PlayerMove[P]),
-		updateHook:  updateHook,
 	}
 }
 
@@ -41,7 +41,7 @@ func (s *Session[P]) playerColor(player P) gamelogic.PieceColor {
 	return gamelogic.RED
 }
 
-func (s *Session[P]) Start() {
+func (s *Session[P]) Start(updateHandler func(update Update)) {
 	go func() {
 		for playerMove := range s.moves {
 			color := s.playerColor(playerMove.Player)
@@ -49,7 +49,7 @@ func (s *Session[P]) Start() {
 			if !verdict {
 				continue
 			}
-			s.updateHook(Update{
+			updateHandler(Update{
 				Board:  s.session.Board(),
 				Status: s.session.Status(),
 			})
