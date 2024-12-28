@@ -1,6 +1,9 @@
 package multiplayer
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Constants
 
@@ -27,16 +30,18 @@ type IUpdate interface {
 // Implementation
 
 type Multiplayer struct {
-	players *SafeDict[string, IPlayer]
-	hooks   *SafeDict[string, func(update IUpdate)]
-	queue   *SafeSet[string]
+	players  *SafeDict[string, IPlayer]
+	hooks    *SafeDict[string, func(update IUpdate)]
+	queue    *SafeSet[string]
+	sessions *SafeDict[string, Session[string]]
 }
 
 func NewMultiplayer() *Multiplayer {
 	return &Multiplayer{
-		players: NewSafeDict[string, IPlayer](),
-		hooks:   NewSafeDict[string, func(update IUpdate)](),
-		queue:   NewSafeSet[string](),
+		players:  NewSafeDict[string, IPlayer](),
+		hooks:    NewSafeDict[string, func(update IUpdate)](),
+		queue:    NewSafeSet[string](),
+		sessions: NewSafeDict[string, Session[string]](),
 	}
 }
 
@@ -61,21 +66,30 @@ func (m *Multiplayer) RegisterPlayer(player IPlayer, hook func(update IUpdate)) 
 }
 
 func (m *Multiplayer) UnregisterPlayer(id string) {
+	m.sessions.IfExists(id, func(session Session[string]) {
+		session.SurrenderAndStop(id)
+	})
+	m.sessions.Delete(id)
 	m.queue.Remove(id)
 	m.hooks.Delete(id)
 	m.players.Delete(id)
-	// TODO: Cleanup queue and possibly running session
 }
 
 func (m *Multiplayer) PushUpdate(id string, update IUpdate) {
 	switch update.Type() {
 	case MSG_IN_JOIN:
-		// TODO: if already in session, reject
-		m.queue.Add(id)
+		if !m.sessions.HasKey(id) {
+			m.queue.Add(id)
+		}
 	case MSG_IN_LEAVE:
+		m.sessions.IfExists(id, func(session Session[string]) {
+			session.SurrenderAndStop(id)
+		})
+		m.sessions.Delete(id)
 		m.queue.Remove(id)
 	case MSG_IN_MOVE:
-
+		// TODO: ...
+		fmt.Printf("%v\n", update)
 	}
 }
 

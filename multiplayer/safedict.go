@@ -21,6 +21,13 @@ func (d *SafeDict[K, V]) Get(key K) (V, bool) {
 	return value, ok
 }
 
+func (d *SafeDict[K, V]) HasKey(key K) bool {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+	_, exists := d.storage[key]
+	return exists
+}
+
 func (d *SafeDict[K, V]) Put(key K, value V) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
