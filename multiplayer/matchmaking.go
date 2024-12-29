@@ -23,7 +23,7 @@ func (m *matchmaking) handleQueue(period time.Duration) {
 		m.queue.WithLock(func(_queue map[*player]bool) {
 			defer clear(_queue)
 			players := utils.Keys(_queue)
-			for i := 0; i < len(players); i++ {
+			for i := 0; i < len(players); i += 2 {
 				if i == len(players)-1 {
 					m.startBotGame(players[i])
 				} else {
@@ -36,6 +36,8 @@ func (m *matchmaking) handleQueue(period time.Duration) {
 
 func (m *matchmaking) startHumanGame(playerA, playerB *player) {
 	game := newGame(playerA, playerB)
+	m.games.Put(playerA, game)
+	m.games.Put(playerB, game)
 	game.startAsync()
 	go m.cleanupGame(game)
 }
