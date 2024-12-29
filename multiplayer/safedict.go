@@ -21,6 +21,17 @@ func (d *SafeDict[K, V]) Get(key K) (V, bool) {
 	return value, ok
 }
 
+func (d *SafeDict[K, V]) GetOrEmpty(key K) V {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+	value, ok := d.storage[key]
+	if !ok {
+		var empty V
+		return empty
+	}
+	return value
+}
+
 func (d *SafeDict[K, V]) HasKey(key K) bool {
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
