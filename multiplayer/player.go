@@ -17,6 +17,7 @@ type player struct {
 	leaveChannel chan bool
 	movesChannel chan incomingMove
 	sendChannel  chan outcomingMessage
+	done         chan bool
 }
 
 func newPlayer(conn *websocket.Conn, info playerInfo) (*player, error) {
@@ -32,6 +33,7 @@ func newPlayer(conn *websocket.Conn, info playerInfo) (*player, error) {
 		leaveChannel: make(chan bool),
 		movesChannel: make(chan incomingMove),
 		sendChannel:  make(chan outcomingMessage),
+		done:         make(chan bool),
 	}
 	return player, nil
 }
@@ -86,4 +88,5 @@ func (p *player) stop() {
 	close(p.movesChannel)
 	close(p.leaveChannel)
 	close(p.joinChannel)
+	close(p.done)
 }

@@ -50,3 +50,24 @@ func (s *SafeSet[T]) Values() []T {
 	}
 	return values
 }
+
+func (s *SafeSet[T]) EjectValues() []T {
+	s.mutex.Lock()
+	defer func() {
+		clear(s.storage)
+		s.mutex.Unlock()
+	}()
+	values := make([]T, len(s.storage))
+	index := 0
+	for value := range s.storage {
+		values[index] = value
+		index++
+	}
+	return values
+}
+
+func (s *SafeSet[T]) WithLock(do func(storage map[T]bool)) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	do(s.storage)
+}

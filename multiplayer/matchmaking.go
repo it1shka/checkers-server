@@ -1,35 +1,87 @@
 package multiplayer
 
+import (
+	"time"
+
+	"it1shka.com/checkers-server/utils"
+)
+
 type matchmaking struct {
-	// TODO:
+	queue *utils.SafeSet[*player]
+	games *utils.SafeDict[*player, *game]
 }
 
 func newMatchmaking() *matchmaking {
 	return &matchmaking{
-		// TODO:
+		queue: utils.NewSafeSet[*player](),
+		games: utils.NewSafeDict[*player, *game](),
 	}
 }
 
+func (m *matchmaking) handleQueue(period time.Duration) {
+	for range time.Tick(period) {
+		m.queue.WithLock(func(_queue map[*player]bool) {
+			defer clear(_queue)
+			players := utils.Keys(_queue)
+			for i := 0; i < len(players); i++ {
+				if i == len(players)-1 {
+					m.startBotGame(players[i])
+				} else {
+					m.startHumanGame(players[i], players[i+1])
+				}
+			}
+		})
+	}
+}
+
+func (m *matchmaking) startHumanGame(playerA, playerB *player) {
+	game := newGame(playerA, playerB)
+	game.startAsync()
+	go m.cleanupGame(game)
+}
+
+func (m *matchmaking) startBotGame(player *player) {
+	// TODO:
+	println("UNIMPLEMENTED")
+}
+
+func (m *matchmaking) cleanupGame(game *game) {
+	defer func() {
+		m.games.Delete(game.playerBlack)
+		m.games.Delete(game.playerRed)
+	}()
+	<-game.done
+}
+
 func (m *matchmaking) handleAsync(player *player) {
+	go m.handleCleanup(player)
 	go m.handleJoin(player)
 	go m.handleLeave(player)
-	go m.handleMove(player)
 }
 
 func (m *matchmaking) handleJoin(player *player) {
 	for range player.joinChannel {
-		// TODO:
+		if !m.games.HasKey(player) {
+			m.queue.Add(player)
+		}
 	}
 }
 
 func (m *matchmaking) handleLeave(player *player) {
 	for range player.leaveChannel {
-		// TODO:
+		m.cleanupPlayer(player)
 	}
 }
 
-func (m *matchmaking) handleMove(player *player) {
-	for move := range player.movesChannel {
-		// TODO:
-	}
+func (m *matchmaking) handleCleanup(player *player) {
+	defer m.cleanupPlayer(player)
+	<-player.done
+}
+
+func (m *matchmaking) cleanupPlayer(player *player) {
+	m.games.IfExists(player, func(activeGame *game) {
+		activeGame.retreat(player)
+	})
+	m.games.Delete(player)
+	m.queue.Delete(player)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/schema"
 	"github.com/gorilla/websocket"
@@ -11,6 +12,7 @@ import (
 
 const serverReadBufferSize = 1024
 const serverWriteBufferSize = 1024
+const matchmakingQueuePeriod = 5 * time.Second
 
 type Server struct {
 	upgrader    websocket.Upgrader
@@ -33,6 +35,7 @@ func (s *Server) Start(port string) {
 	fmt.Printf("Running multiplayer server on port: %s\n", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws-connect", s.handleRequest)
+	go s.matchmaking.handleQueue(matchmakingQueuePeriod)
 	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatalln(err)
 	}

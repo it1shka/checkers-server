@@ -37,3 +37,8 @@ type outcomingMessage struct {
 	Type    string `json:"type"`
 	Payload any    `json:"payload"`
 }
+
+type authoredMove struct {
+	author *player
+	move   incomingMove
+}
