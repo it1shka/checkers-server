@@ -13,8 +13,9 @@ const serverReadBufferSize = 1024
 const serverWriteBufferSize = 1024
 
 type Server struct {
-	upgrader websocket.Upgrader
-	decoder  *schema.Decoder
+	upgrader    websocket.Upgrader
+	decoder     *schema.Decoder
+	matchmaking *matchmaking
 }
 
 func NewServer() *Server {
@@ -23,7 +24,8 @@ func NewServer() *Server {
 			ReadBufferSize:  serverReadBufferSize,
 			WriteBufferSize: serverWriteBufferSize,
 		},
-		decoder: schema.NewDecoder(),
+		decoder:     schema.NewDecoder(),
+		matchmaking: newMatchmaking(),
 	}
 }
 
@@ -61,4 +63,5 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	player.startAsync()
+	s.matchmaking.handleAsync(player)
 }
