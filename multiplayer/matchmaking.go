@@ -6,15 +6,20 @@ import (
 	"it1shka.com/checkers-server/utils"
 )
 
+type abstractGame interface {
+	retreat(player *player)
+	pushMove(move authoredMove)
+}
+
 type matchmaking struct {
 	queue *utils.SafeSet[*player]
-	games *utils.SafeDict[*player, *game]
+	games *utils.SafeDict[*player, abstractGame]
 }
 
 func newMatchmaking() *matchmaking {
 	return &matchmaking{
 		queue: utils.NewSafeSet[*player](),
-		games: utils.NewSafeDict[*player, *game](),
+		games: utils.NewSafeDict[*player, abstractGame](),
 	}
 }
 
@@ -82,11 +87,12 @@ func (m *matchmaking) handlePlayerAsync(player *player) {
 			case <-player.done:
 				break ListenMove
 			case move := <-player.movesChannel:
-				m.games.IfExists(player, func(activeGame *game) {
-					activeGame.moves <- authoredMove{
+				m.games.IfExists(player, func(activeGame abstractGame) {
+					move := authoredMove{
 						author: player,
 						move:   move,
 					}
+					activeGame.pushMove(move)
 				})
 			}
 		}
@@ -106,7 +112,7 @@ func (m *matchmaking) handlePlayerAsync(player *player) {
 }
 
 func (m *matchmaking) cleanupPlayer(player *player) {
-	m.games.IfExists(player, func(activeGame *game) {
+	m.games.IfExists(player, func(activeGame abstractGame) {
 		activeGame.retreat(player)
 	})
 	m.games.Delete(player)

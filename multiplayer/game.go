@@ -162,6 +162,15 @@ func (g *game) retreat(loser *player) {
 	}
 }
 
+func (g *game) pushMove(move authoredMove) {
+	select {
+	case <-g.done:
+		return
+	default:
+		g.moves <- move
+	}
+}
+
 func (g *game) finish() {
 	close(g.done)
 	close(g.moves)
