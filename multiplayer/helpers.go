@@ -1,6 +1,11 @@
 package multiplayer
 
-import "it1shka.com/checkers-server/gamelogic"
+import (
+	"math/rand"
+	"strconv"
+
+	"it1shka.com/checkers-server/gamelogic"
+)
 
 func getOutMsgEnemy(enemy *player) outcomingMessage {
 	return outcomingMessage{
@@ -68,5 +73,57 @@ func getOutMsgTime(tag string, time int32) outcomingMessage {
 			"player": tag,
 			"time":   time,
 		},
+	}
+}
+
+// TODO: these names are pretty weird
+var pseudoFirstNames = []string{
+	"Astro",
+	"Frank",
+	"Hugo",
+	"Big",
+	"Profi",
+	"Sn1per",
+	"pr0fessional",
+}
+
+var pseudoSecondNames = []string{
+	"_profi",
+	"__tank",
+	"Master",
+	"TopPlayer",
+	"Messi",
+	"Krash",
+	"@storm",
+}
+
+var pseudoCountries = []string{
+	"Belarus",
+	"Poland",
+	"Germany",
+	"US",
+	"France",
+	"Australia",
+	"Hungary",
+}
+
+func getPseudoPlayerInfo() playerInfo {
+	firstPart := pseudoFirstNames[rand.Intn(len(pseudoFirstNames))]
+	secondPart := pseudoSecondNames[rand.Intn(len(pseudoSecondNames))]
+	postfix := rand.Intn(900) + 100
+	name := firstPart + secondPart + strconv.Itoa(postfix)
+	rating := rand.Intn(101)
+	country := pseudoCountries[rand.Intn(len(pseudoCountries))]
+	return playerInfo{
+		Nickname: name,
+		Rating:   uint(rating),
+		Region:   country,
+	}
+}
+
+func getOutMsgPseudoEnemy(info playerInfo) outcomingMessage {
+	return outcomingMessage{
+		Type:    outMsgEnemy,
+		Payload: info,
 	}
 }

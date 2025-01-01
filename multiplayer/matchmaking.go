@@ -56,8 +56,13 @@ func (m *matchmaking) startHumanGameAsync(playerA, playerB *player) {
 }
 
 func (m *matchmaking) startBotGameAsync(player *player) {
-	// TODO:
-	println("UNIMPLEMENTED")
+	pseudogame := newPseudogame(player)
+	m.games.Put(player, pseudogame)
+	go func() {
+		defer m.games.Delete(player)
+		<-pseudogame.done
+	}()
+	pseudogame.startAsync()
 }
 
 func (m *matchmaking) handlePlayerAsync(player *player) {

@@ -102,6 +102,7 @@ func (g *game) startAsync() {
 				}
 
 				g.timeChange <- true
+				g.timeFlag.Store(!g.timeFlag.Load())
 				g.startClockAsync()
 			}
 		}
