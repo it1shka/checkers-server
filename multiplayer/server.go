@@ -35,7 +35,7 @@ func (s *Server) Start(port string) {
 	fmt.Printf("Running multiplayer server on port: %s\n", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws-connect", s.handleRequest)
-	go s.matchmaking.handleQueue(matchmakingQueuePeriod)
+	s.matchmaking.startMatchmakingAsync(matchmakingQueuePeriod)
 	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatalln(err)
 	}
@@ -66,5 +66,5 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	player.startAsync()
-	s.matchmaking.handleAsync(player)
+	s.matchmaking.handlePlayerAsync(player)
 }

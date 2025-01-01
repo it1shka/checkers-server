@@ -33,6 +33,14 @@ type incomingMove struct {
 	to   gamelogic.PieceSquare
 }
 
+const (
+	outMsgEnemy  = "enemy"
+	outMsgColor  = "color"
+	outMsgBoard  = "board"
+	outMsgStatus = "status"
+	outMsgTime   = "time"
+)
+
 type outcomingMessage struct {
 	Type    string `json:"type"`
 	Payload any    `json:"payload"`

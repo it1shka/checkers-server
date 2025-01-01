@@ -39,14 +39,20 @@ func newPlayer(conn *websocket.Conn, info playerInfo) (*player, error) {
 }
 
 func (p *player) startAsync() {
-	go p.receive()
+	go p.send()
 	go p.listen()
 }
 
-func (p *player) receive() {
-	for msg := range p.sendChannel {
-		if err := p.conn.WriteJSON(msg); err != nil {
-			log.Println(err)
+func (p *player) send() {
+FeedbackSend:
+	for {
+		select {
+		case <-p.done:
+			break FeedbackSend
+		case msg := <-p.sendChannel:
+			if err := p.conn.WriteJSON(msg); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
@@ -83,10 +89,20 @@ Listening:
 }
 
 func (p *player) stop() {
+	close(p.done)
 	p.conn.Close()
 	close(p.sendChannel)
 	close(p.movesChannel)
 	close(p.leaveChannel)
 	close(p.joinChannel)
-	close(p.done)
+	p.conn = nil
+}
+
+func (p *player) sendMessage(message outcomingMessage) {
+	select {
+	case <-p.done:
+		return
+	default:
+		p.sendChannel <- message
+	}
 }
