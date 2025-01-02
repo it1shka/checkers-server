@@ -61,6 +61,11 @@ func (g *pseudogame) startAsync() {
 	pseudoEnemyInfo := getPseudoPlayerInfo()
 	g.human.sendMessage(getOutMsgPseudoEnemy(pseudoEnemyInfo))
 
+	boardMsg := getOutMsgBoard(g.state.Board())
+	statusMsg := getOutMsgStatus(g.state.Status())
+	g.human.sendMessage(boardMsg)
+	g.human.sendMessage(statusMsg)
+
 	go func() {
 	ListeningMoves:
 		for {

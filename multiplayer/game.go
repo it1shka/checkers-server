@@ -77,6 +77,13 @@ func (g *game) startAsync() {
 	g.playerBlack.sendMessage(getOutMsgEnemy(g.playerRed))
 	g.playerRed.sendMessage(getOutMsgEnemy(g.playerBlack))
 
+	boardMsg := getOutMsgBoard(g.state.Board())
+	statusMsg := getOutMsgStatus(g.state.Status())
+	for _, player := range []*player{g.playerBlack, g.playerRed} {
+		player.sendMessage(boardMsg)
+		player.sendMessage(statusMsg)
+	}
+
 	go func() {
 	ListeningMoves:
 		for {
