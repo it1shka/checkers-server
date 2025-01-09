@@ -79,9 +79,14 @@ func (g *game) startAsync() {
 
 	boardMsg := getOutMsgBoard(g.state.Board())
 	statusMsg := getOutMsgStatus(g.state.Status())
+	redTimeMsg := getOutMsgTime(colorRed, maxGameTime)
+	blackTimeMsg := getOutMsgTime(colorBlack, maxGameTime)
+
 	for _, player := range []*player{g.playerBlack, g.playerRed} {
 		player.sendMessage(boardMsg)
 		player.sendMessage(statusMsg)
+		player.sendMessage(redTimeMsg)
+		player.sendMessage(blackTimeMsg)
 	}
 
 	go func() {
@@ -92,6 +97,7 @@ func (g *game) startAsync() {
 				break ListeningMoves
 			case move := <-g.moves:
 				color := g.colorOf(move.author)
+				previousTurn := g.state.Board().Turn()
 				success := g.state.MakeMove(color, move.move.from, move.move.to)
 				if !success {
 					continue ListeningMoves
@@ -107,10 +113,11 @@ func (g *game) startAsync() {
 					g.finish()
 					break ListeningMoves
 				}
-
-				g.timeChange <- true
-				g.timeFlag.Store(!g.timeFlag.Load())
-				g.startClockAsync()
+				if g.state.Board().Turn() != previousTurn {
+					g.timeChange <- true
+					g.timeFlag.Store(!g.timeFlag.Load())
+					g.startClockAsync()
+				}
 			}
 		}
 	}()

@@ -78,9 +78,12 @@ func (m *matchmaking) handlePlayerAsync(player *player) {
 			case <-player.done:
 				break ListenJoin
 			case <-player.joinChannel:
-				if !m.games.HasKey(player) {
-					m.queue.Add(player)
-				}
+				m.games.IfExists(player, func(activeGame abstractGame) {
+					activeGame.retreat(player)
+				})
+				m.games.Delete(player)
+				m.queue.Add(player)
+				player.sendMessage(getOutMsgQueueJoined())
 			}
 		}
 	}()
@@ -110,6 +113,9 @@ func (m *matchmaking) handlePlayerAsync(player *player) {
 			case <-player.done:
 				break ListenLeave
 			case <-player.leaveChannel:
+				if m.queue.Has(player) {
+					player.sendMessage(getOutMsgQueueLeft())
+				}
 				m.cleanupPlayer(player)
 			}
 		}

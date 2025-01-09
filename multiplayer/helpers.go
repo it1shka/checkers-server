@@ -77,6 +77,18 @@ func getOutMsgTime(tag string, time int32) outcomingMessage {
 	}
 }
 
+func getOutMsgQueueJoined() outcomingMessage {
+	return outcomingMessage{
+		Type: outMsgQueueJoined,
+	}
+}
+
+func getOutMsgQueueLeft() outcomingMessage {
+	return outcomingMessage{
+		Type: outMsgQueueLeft,
+	}
+}
+
 // TODO: these names are pretty weird
 var pseudoFirstNames = []string{
 	"Astro",

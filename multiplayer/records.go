@@ -34,11 +34,13 @@ type incomingMove struct {
 }
 
 const (
-	outMsgEnemy  = "enemy"
-	outMsgColor  = "color"
-	outMsgBoard  = "board"
-	outMsgStatus = "status"
-	outMsgTime   = "time"
+	outMsgEnemy       = "enemy"
+	outMsgColor       = "color"
+	outMsgBoard       = "board"
+	outMsgStatus      = "status"
+	outMsgTime        = "time"
+	outMsgQueueJoined = "queue-joined"
+	outMsgQueueLeft   = "queue-left"
 )
 
 type outcomingMessage struct {
