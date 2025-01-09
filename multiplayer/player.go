@@ -76,11 +76,14 @@ Listening:
 		case incMsgMove:
 			var moveMessage incomingMoveRaw
 			if err := json.Unmarshal(message.Payload, &moveMessage); err != nil {
+				log.Println(err)
+				log.Printf("Malformed payload: %v\n", message.Payload)
 				continue Listening
 			}
 			from := gamelogic.PieceSquare(moveMessage.From)
 			to := gamelogic.PieceSquare(moveMessage.To)
 			if !from.IsValid() || !to.IsValid() {
+				log.Printf("Received an invalid move: from %d, to %d\n", int(from), int(to))
 				continue Listening
 			}
 			p.movesChannel <- incomingMove{from, to}

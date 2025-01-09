@@ -64,8 +64,12 @@ func (g *pseudogame) startAsync() {
 
 	boardMsg := getOutMsgBoard(g.state.Board())
 	statusMsg := getOutMsgStatus(g.state.Status())
+	selfTimeMsg := getOutMsgTime(g.humanColor.String(), maxGameTime)
+	enemyTimeMsg := getOutMsgTime(g.humanColor.Opposite().String(), maxGameTime)
 	g.human.sendMessage(boardMsg)
 	g.human.sendMessage(statusMsg)
+	g.human.sendMessage(selfTimeMsg)
+	g.human.sendMessage(enemyTimeMsg)
 
 	go func() {
 	ListeningMoves:
@@ -80,6 +84,7 @@ func (g *pseudogame) startAsync() {
 				} else {
 					moveColor = g.humanColor.Opposite()
 				}
+				previousTurn := g.state.Board().Turn()
 				success := g.state.MakeMove(moveColor, move.move.from, move.move.to)
 				if !success {
 					continue ListeningMoves
@@ -93,10 +98,11 @@ func (g *pseudogame) startAsync() {
 					g.finish()
 					break ListeningMoves
 				}
-
-				g.timeChange <- true
-				g.timeFlag.Store(!g.timeFlag.Load())
-				g.startClockAsync()
+				if g.state.Board().Turn() != previousTurn {
+					g.timeChange <- true
+					g.timeFlag.Store(!g.timeFlag.Load())
+					g.startClockAsync()
+				}
 
 				if g.state.Board().Turn() == g.humanColor.Opposite() {
 					g.triggerBotAsync()
@@ -120,13 +126,14 @@ func (g *pseudogame) triggerBotAsync() {
 			g.finish()
 			return
 		}
-		g.moves <- authoredMove{
+		authored := authoredMove{
 			author: nil,
 			move: incomingMove{
 				from: move.From,
 				to:   move.To,
 			},
 		}
+		g.pushMove(authored)
 	}()
 }
 
