@@ -3,6 +3,7 @@ package multiplayer
 import (
 	"math/rand"
 	"strconv"
+	"time"
 
 	"it1shka.com/checkers-server/gamelogic"
 )
@@ -126,4 +127,11 @@ func getOutMsgPseudoEnemy(info playerInfo) outcomingMessage {
 		Type:    outMsgEnemy,
 		Payload: info,
 	}
+}
+
+func randomBool() bool {
+	seed := time.Now().UnixNano()
+	gen := rand.New(rand.NewSource(seed))
+	guess := gen.Intn(2)
+	return guess == 0
 }

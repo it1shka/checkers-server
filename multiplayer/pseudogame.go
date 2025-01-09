@@ -24,8 +24,9 @@ type pseudogame struct {
 }
 
 func newPseudogame(human *player) *pseudogame {
+	guess := randomBool()
 	var humanColor gamelogic.PieceColor
-	if rand.Intn(2) == 0 {
+	if guess {
 		humanColor = gamelogic.BLACK
 	} else {
 		humanColor = gamelogic.RED

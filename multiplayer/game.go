@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"math/rand"
 	"sync/atomic"
 	"time"
 
@@ -33,8 +32,9 @@ type game struct {
 }
 
 func newGame(playerA, playerB *player) *game {
+	guess := randomBool()
 	var playerBlack, playerRed *player
-	if rand.Intn(2) == 0 {
+	if guess {
 		playerBlack, playerRed = playerA, playerB
 	} else {
 		playerBlack, playerRed = playerB, playerA
