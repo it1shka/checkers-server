@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import useSettingsState from './useSettingsState.js'
 
-const CONNECTION_URL = 'ws://localhost:3333/ws-connect'
+const CONNECTION_URL = `ws://${location.host}/ws-connect`
 
 const useWebsocket = defineStore('websocket', () => {
   const websocket = ref(null)
