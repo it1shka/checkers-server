@@ -187,10 +187,15 @@ func (g *game) pushMove(move authoredMove) {
 }
 
 func (g *game) finish() {
-	close(g.done)
-	close(g.moves)
-	close(g.timeChange)
-	g.state = nil
-	g.playerBlack = nil
-	g.playerRed = nil
+	select {
+	case <-g.done:
+		return
+	default:
+		close(g.done)
+		close(g.moves)
+		close(g.timeChange)
+		g.state = nil
+		g.playerBlack = nil
+		g.playerRed = nil
+	}
 }
