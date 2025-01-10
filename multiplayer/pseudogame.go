@@ -191,9 +191,14 @@ func (g *pseudogame) pushMove(move authoredMove) {
 }
 
 func (g *pseudogame) finish() {
-	close(g.done)
-	close(g.moves)
-	close(g.timeChange)
-	g.state = nil
-	g.human = nil
+	select {
+	case <-g.done:
+		return
+	default:
+		close(g.done)
+		close(g.moves)
+		close(g.timeChange)
+		g.state = nil
+		g.human = nil
+	}
 }

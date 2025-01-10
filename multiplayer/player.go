@@ -92,13 +92,18 @@ Listening:
 }
 
 func (p *player) stop() {
-	close(p.done)
-	p.conn.Close()
-	close(p.sendChannel)
-	close(p.movesChannel)
-	close(p.leaveChannel)
-	close(p.joinChannel)
-	p.conn = nil
+	select {
+	case <-p.done:
+		return
+	default:
+		close(p.done)
+		p.conn.Close()
+		close(p.sendChannel)
+		close(p.movesChannel)
+		close(p.leaveChannel)
+		close(p.joinChannel)
+		p.conn = nil
+	}
 }
 
 func (p *player) sendMessage(message outcomingMessage) {
